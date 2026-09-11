@@ -415,6 +415,26 @@
 const API_URL = "https://script.google.com/macros/s/AKfycby8IR2a-hfZSDZPfedgpLQv2TE0Da9A_CU0n_OiA7K3hhqO75TeNNebfjFFvgNZIOFu/exec";
 let filtroAtual = "TODOS";
 
+// Faz fetch com um tempo limite: se o Apps Script não responder dentro
+// do prazo, a Promise é rejeitada em vez de ficar pendente para sempre
+// (isso é o que fazia o botão "Importando..." travar sem nenhum erro).
+async function fetchComTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function mensagemDeErro(err) {
+  if (err.name === "AbortError") {
+    return "tempo limite excedido — o Apps Script demorou demais para responder (planilha muito grande, ou o script pode estar aguardando reautorização depois de uma atualização de código).";
+  }
+  return err.message || String(err);
+}
+
 // Guarda os dados brutos para exportar com tudo
 let dadosGlobais = [];
 
@@ -447,8 +467,21 @@ async function carregarDados() {
     </tr>
   `;
 
-  const res = await fetch(API_URL);
-  const dados = await res.json();
+  let dados;
+  try {
+    const res = await fetchComTimeout(API_URL, {}, 20000);
+    dados = await res.json();
+  } catch (err) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="16" style="text-align:center; padding: 30px; color: #dc3545; font-size: 15px;">
+          ⚠️ Não foi possível carregar os dados (${mensagemDeErro(err)}).<br>
+          <button onclick="carregarDados()" style="margin-top:10px; padding:8px 16px; cursor:pointer;">🔄 Tentar novamente</button>
+        </td>
+      </tr>
+    `;
+    return;
+  }
 
   // Salva os dados brutos globalmente para o exportar
   dadosGlobais = dados;
@@ -514,23 +547,33 @@ async function salvar(btn) {
   const nf = tds[2].innerText;
   const motivo = tds[13].querySelector("input").value;
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ nf, motivo })
-  });
-
-  btn.textContent = "✅ Salvo!";
-  btn.style.background = "#28a745";
-  btn.style.color = "white";
+  btn.textContent = "⏳ Salvando...";
   btn.disabled = true;
 
-  setTimeout(() => {
+  try {
+    await fetchComTimeout(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ nf, motivo })
+    }, 30000);
+
+    btn.textContent = "✅ Salvo!";
+    btn.style.background = "#28a745";
+    btn.style.color = "white";
+
+    setTimeout(() => {
+      btn.textContent = "Salvar";
+      btn.style.background = "";
+      btn.style.color = "";
+      btn.disabled = false;
+      carregarDados();
+    }, 2000);
+  } catch (err) {
+    alert("❌ Erro ao salvar: " + mensagemDeErro(err));
     btn.textContent = "Salvar";
     btn.style.background = "";
     btn.style.color = "";
     btn.disabled = false;
-    carregarDados();
-  }, 2000);
+  }
 }
 
 async function salvarSelecionados() {
@@ -556,20 +599,27 @@ async function salvarSelecionados() {
   btnLote.textContent = "⏳ Salvando...";
   btnLote.disabled = true;
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ lote })
-  });
+  try {
+    await fetchComTimeout(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ lote })
+    }, 30000);
 
-  btnLote.textContent = "✅ Lote Salvo!";
-  btnLote.style.background = "#28a745";
+    btnLote.textContent = "✅ Lote Salvo!";
+    btnLote.style.background = "#28a745";
 
-  setTimeout(() => {
+    setTimeout(() => {
+      btnLote.textContent = "💾 Salvar selecionados (manual)";
+      btnLote.style.background = "#ff9800";
+      btnLote.disabled = false;
+      carregarDados();
+    }, 2000);
+  } catch (err) {
+    alert("❌ Erro ao salvar lote: " + mensagemDeErro(err));
     btnLote.textContent = "💾 Salvar selecionados (manual)";
     btnLote.style.background = "#ff9800";
     btnLote.disabled = false;
-    carregarDados();
-  }, 2000);
+  }
 }
 
 // ═══════════════════════════════════════
@@ -686,19 +736,22 @@ async function importarRespostasTransportadora() {
   btn.textContent = "⏳ Importando...";
   btn.disabled = true;
 
-  const resposta = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ responderLote: true, respostas })
-  });
+  try {
+    const resposta = await fetchComTimeout(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ responderLote: true, respostas })
+    }, 60000);
 
-  const resultado = await resposta.text();
-  alert(resultado);
-
-  btn.textContent = "📤 Importar respostas preenchidas";
-  btn.disabled = false;
-  fileInput.value = "";
-
-  carregarDados();
+    const resultado = await resposta.text();
+    alert(resultado);
+    carregarDados();
+  } catch (err) {
+    alert("❌ Erro ao importar respostas: " + mensagemDeErro(err));
+  } finally {
+    btn.textContent = "📤 Importar respostas preenchidas";
+    btn.disabled = false;
+    fileInput.value = "";
+  }
 }
 
 async function importarCSV() {
@@ -728,19 +781,23 @@ async function importarCSV() {
   btnImportar.textContent = "⏳ Importando...";
   btnImportar.disabled = true;
 
-  const resposta = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ importarCSV: true, senha: senha, linhas: linhas })
-  });
+  try {
+    const resposta = await fetchComTimeout(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ importarCSV: true, senha: senha, linhas: linhas })
+    }, 60000);
 
-  const resultado = await resposta.text();
-  alert(resultado);
+    const resultado = await resposta.text();
+    alert(resultado);
 
-  btnImportar.textContent = "📂 Importar planilha base (Admin)";
-  btnImportar.disabled = false;
-  fileInput.value = "";
-
-  if (resultado.includes("sucesso")) carregarDados();
+    if (resultado.includes("sucesso")) carregarDados();
+  } catch (err) {
+    alert("❌ Erro ao importar: " + mensagemDeErro(err));
+  } finally {
+    btnImportar.textContent = "📂 Importar planilha base (Admin)";
+    btnImportar.disabled = false;
+    fileInput.value = "";
+  }
 }
 
 function exportarExcel() {
@@ -827,7 +884,7 @@ async function abrirHistorico() {
   `;
 
   try {
-    const res = await fetch(`${API_URL}?historico=true`);
+    const res = await fetchComTimeout(`${API_URL}?historico=true`, {}, 20000);
     const dados = await res.json();
 
     // Ignora o cabeçalho e ordena do mais recente para o mais antigo
@@ -836,7 +893,10 @@ async function abrirHistorico() {
     renderizarHistorico(historicoGlobal);
   } catch (err) {
     tbody.innerHTML = `
-      <tr><td colspan="4" style="text-align:center; padding:20px; color:#dc3545;">Erro ao carregar histórico.</td></tr>
+      <tr><td colspan="4" style="text-align:center; padding:20px; color:#dc3545;">
+        ⚠️ Erro ao carregar histórico (${mensagemDeErro(err)}).<br>
+        <button onclick="abrirHistorico()" style="margin-top:10px; padding:6px 14px; cursor:pointer;">🔄 Tentar novamente</button>
+      </td></tr>
     `;
   }
 }
