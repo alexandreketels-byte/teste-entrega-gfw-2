@@ -469,7 +469,7 @@ async function carregarDados() {
 
   let dados;
   try {
-    const res = await fetchComTimeout(API_URL, {}, 20000);
+    const res = await fetchComTimeout(API_URL, {}, 45000);
     dados = await res.json();
   } catch (err) {
     tbody.innerHTML = `
@@ -495,7 +495,7 @@ async function carregarDados() {
   dados.slice(1).forEach(linha => {
     // Coluna "Atraso?" (índice 11) foi descontinuada.
     // Status agora depende só de o Motivo estar preenchido.
-    const motivoAtual = linha[12] || "";
+    const motivoAtual = String(linha[12] ?? "");
     const dataResposta = linha[13] || "";
     const status = motivoAtual.trim() ? "RESPONDIDO" : "PENDENTE";
 
@@ -655,7 +655,7 @@ function exportarModeloTransportadora() {
   }
 
   const pendentes = dadosGlobais.slice(1).filter(linha => {
-    const motivoAtual = linha[12] || "";
+    const motivoAtual = String(linha[12] ?? "");
     return !motivoAtual.trim();
   });
 
@@ -815,7 +815,7 @@ function exportarExcel() {
 
   // Monta linhas: pega os dados brutos e calcula Status Resp igual à tela
   const linhas = dadosGlobais.slice(1).map(linha => {
-    const motivoAtual = linha[12] || "";
+    const motivoAtual = String(linha[12] ?? "");
     const statusResp = motivoAtual.trim() ? "RESPONDIDO" : "PENDENTE";
 
     return [
@@ -884,7 +884,7 @@ async function abrirHistorico() {
   `;
 
   try {
-    const res = await fetchComTimeout(`${API_URL}?historico=true`, {}, 20000);
+    const res = await fetchComTimeout(`${API_URL}?historico=true`, {}, 45000);
     const dados = await res.json();
 
     // Ignora o cabeçalho e ordena do mais recente para o mais antigo
