@@ -55,19 +55,35 @@
   .numero-pendente { color: #dc3545; font-size: 26px; font-weight: bold; }
   .numero-respondido { color: #28a745; font-size: 26px; font-weight: bold; }
 
-  .acoes-grupo {
+  /* Barra de ferramentas (topo) */
+  .barra-topo {
     display: flex; align-items: center; gap: 8px;
-    padding: 12px; border-radius: 8px;
-    background: #fff5e6; border: 1px solid #ffd699;
-    flex-wrap: wrap; margin-bottom: 10px;
+    flex-wrap: wrap; padding: 10px 12px;
+    background: #f4f6f8; border: 1px solid #e0e4e8;
+    border-radius: 8px; margin-bottom: 14px;
   }
-  .acoes-grupo strong { font-size: 13px; color: #a06000; }
 
-  .acoes {
+  .barra-topo .rotulo {
+    font-size: 11px; color: #6c757d; font-weight: bold;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+
+  .divisor { width: 1px; height: 26px; background: #d5dade; margin: 0 4px; }
+  .espacador { flex: 1; }
+
+  /* Barra de ações fixa, logo acima da tabela */
+  .barra-acoes {
+    position: sticky; top: 0; z-index: 500;
     display: flex; align-items: center; gap: 10px;
     flex-wrap: wrap; padding: 12px;
-    background: #f4f6f8; border-radius: 8px; margin-bottom: 15px;
+    background: #eaf6ec; border: 1px solid #bfe3c8;
+    border-radius: 8px; margin-bottom: 12px;
   }
+
+  .barra-acoes .dica { font-size: 12px; color: #4a6b52; }
+
+  /* Campos de arquivo ficam ocultos: os botões os acionam */
+  input[type="file"] { display: none; }
 
   .btn-lote, .btn-importar, .btn-exportar, .btn-modelo,
   .btn-resp-lote, .btn-historico, .btn-salvar-tudo {
@@ -92,7 +108,8 @@
 
   th {
     background: #007bff; color: white; padding: 9px 8px;
-    white-space: nowrap; font-size: 13px; position: sticky; top: 0;
+    white-space: nowrap; font-size: 13px;
+    position: sticky; top: var(--offset-topo, 0px);
   }
 
   td {
@@ -159,6 +176,27 @@
   <h2>🚚 Entregas Pendentes</h2>
   <p class="subtitulo">Acompanhamento de atrasos por NF e resposta das transportadoras</p>
 
+  <!-- Barra de ferramentas: tudo que não é edição do dia a dia -->
+  <div class="barra-topo">
+    <span class="rotulo">Transportadora</span>
+    <button class="btn-modelo" onclick="exportarModeloTransportadora()">📥 Baixar modelo</button>
+    <button class="btn-resp-lote" onclick="document.getElementById('csvRespostas').click()">📤 Importar respostas</button>
+
+    <div class="divisor"></div>
+
+    <span class="rotulo">Planilha</span>
+    <button class="btn-importar" id="btnImportarBase" onclick="document.getElementById('csvFile').click()">📂 Importar base (Admin)</button>
+    <button class="btn-exportar" onclick="exportarExcel()">📊 Exportar tudo</button>
+
+    <div class="divisor"></div>
+
+    <button class="btn-historico" onclick="abrirHistorico()">📜 Histórico</button>
+    <button class="btn-importar" onclick="carregarDados()">🔄 Atualizar</button>
+
+    <input type="file" id="csvRespostas" accept=".csv" onchange="importarRespostasTransportadora()">
+    <input type="file" id="csvFile" accept=".csv" onchange="importarCSV()">
+  </div>
+
   <div class="filtros">
     <button class="btn-todos ativo" onclick="filtrar('TODOS', this)">Todos</button>
     <button class="btn-pendente" onclick="filtrar('PENDENTE', this)">Pendentes</button>
@@ -171,21 +209,11 @@
     <div class="card" id="respondidoCard">Respondidos: <span class="numero-respondido">0</span></div>
   </div>
 
-  <div class="acoes-grupo">
-    <strong>📨 Resposta em lote (transportadora):</strong>
-    <button class="btn-modelo" onclick="exportarModeloTransportadora()">📥 Baixar modelo (NFs pendentes)</button>
-    <input type="file" id="csvRespostas" accept=".csv">
-    <button class="btn-resp-lote" onclick="importarRespostasTransportadora()">📤 Importar respostas preenchidas</button>
-  </div>
-
-  <div class="acoes">
+  <!-- Ações do dia a dia, fixas ao rolar a tabela -->
+  <div class="barra-acoes">
     <button class="btn-salvar-tudo" onclick="enviarFila(true)">💾 Salvar alterações (<span id="contadorFila">0</span>)</button>
     <button class="btn-lote" onclick="salvarSelecionados()">✔️ Marcar selecionados</button>
-    <input type="file" id="csvFile" accept=".csv">
-    <button class="btn-importar" onclick="importarCSV()">📂 Importar planilha base (Admin)</button>
-    <button class="btn-exportar" onclick="exportarExcel()">📊 Exportar tudo</button>
-    <button class="btn-historico" onclick="abrirHistorico()">📜 Ver Histórico</button>
-    <button class="btn-importar" onclick="carregarDados()">🔄 Atualizar</button>
+    <span class="dica">Digite o motivo e aperte Enter, ou preencha vários e salve de uma vez.</span>
   </div>
 
   <div class="tabela-wrapper">
@@ -592,7 +620,7 @@ function exportarModeloTransportadora() {
 
 async function importarRespostasTransportadora() {
   const fileInput = document.getElementById("csvRespostas");
-  if (!fileInput.files.length) { alert("Selecione o arquivo preenchido pela transportadora!"); return; }
+  if (!fileInput.files.length) return; // seleção cancelada
 
   const linhas = await lerCSV(fileInput.files[0]);
   if (linhas.length < 2) { alert("Arquivo vazio ou sem dados!"); return; }
@@ -611,7 +639,7 @@ async function importarRespostasTransportadora() {
     .filter(r => r.nf && r.motivo);
 
   if (!respostas.length) { alert("Nenhuma linha com Motivo preenchido no arquivo."); return; }
-  if (!confirm(`Importar ${respostas.length} resposta(s) da transportadora?`)) return;
+  if (!confirm(`Importar ${respostas.length} resposta(s) da transportadora?`)) { fileInput.value = ""; return; }
 
   const btn = document.querySelector(".btn-resp-lote");
   btn.textContent = "⏳ Importando...";
@@ -628,7 +656,7 @@ async function importarRespostasTransportadora() {
   } catch (err) {
     alert("❌ Erro ao importar respostas: " + mensagemDeErro(err));
   } finally {
-    btn.textContent = "📤 Importar respostas preenchidas";
+    btn.textContent = "📤 Importar respostas";
     btn.disabled = false;
     fileInput.value = "";
   }
@@ -636,17 +664,20 @@ async function importarRespostasTransportadora() {
 
 async function importarCSV() {
   const fileInput = document.getElementById("csvFile");
-  if (!fileInput.files.length) { alert("Selecione um arquivo CSV primeiro!"); return; }
+  if (!fileInput.files.length) return; // seleção cancelada
 
   const senha = prompt("🔒 Digite a senha para importar:");
-  if (!senha) return;
+  if (!senha) { fileInput.value = ""; return; }
 
   const linhas = await lerCSV(fileInput.files[0]);
-  if (linhas.length < 2) { alert("CSV vazio ou sem dados!"); return; }
+  if (linhas.length < 2) { alert("CSV vazio ou sem dados!"); fileInput.value = ""; return; }
 
-  if (!confirm(`Importar ${linhas.length - 1} linha(s)?\n\nATENÇÃO: isso substituirá todos os dados da aba!`)) return;
+  if (!confirm(`Importar ${linhas.length - 1} linha(s)?\n\nATENÇÃO: isso substituirá todos os dados da aba!`)) {
+    fileInput.value = "";
+    return;
+  }
 
-  const btn = document.querySelector(".btn-importar");
+  const btn = document.getElementById("btnImportarBase");
   btn.textContent = "⏳ Importando...";
   btn.disabled = true;
 
@@ -666,7 +697,7 @@ async function importarCSV() {
   } catch (err) {
     alert("❌ Erro ao importar: " + mensagemDeErro(err));
   } finally {
-    btn.textContent = "📂 Importar planilha base (Admin)";
+    btn.textContent = "📂 Importar base (Admin)";
     btn.disabled = false;
     fileInput.value = "";
   }
@@ -747,6 +778,18 @@ function fecharHistorico() {
   document.getElementById("modalHistorico").style.display = "none";
   document.getElementById("buscaHistorico").value = "";
 }
+
+// Mantém o cabeçalho da tabela grudado logo abaixo da barra de ações,
+// recalculando se a barra mudar de altura (ex.: quebra de linha em telas menores).
+function ajustarOffsetCabecalho() {
+  const barra = document.querySelector(".barra-acoes");
+  if (!barra) return;
+  const altura = barra.getBoundingClientRect().height;
+  document.documentElement.style.setProperty("--offset-topo", `${altura}px`);
+}
+
+window.addEventListener("resize", ajustarOffsetCabecalho);
+ajustarOffsetCabecalho();
 
 carregarDados();
 </script>
