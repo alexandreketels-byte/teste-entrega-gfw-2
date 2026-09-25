@@ -71,9 +71,8 @@
   .divisor { width: 1px; height: 26px; background: #d5dade; margin: 0 4px; }
   .espacador { flex: 1; }
 
-  /* Barra de ações fixa, logo acima da tabela */
+  /* Ações do dia a dia, logo acima da tabela */
   .barra-acoes {
-    position: sticky; top: 0; z-index: 500;
     display: flex; align-items: center; gap: 10px;
     flex-wrap: wrap; padding: 12px;
     background: #eaf6ec; border: 1px solid #bfe3c8;
@@ -109,7 +108,7 @@
   th {
     background: #007bff; color: white; padding: 9px 8px;
     white-space: nowrap; font-size: 13px;
-    position: sticky; top: var(--offset-topo, 0px);
+    position: sticky; top: 0; z-index: 2;
   }
 
   td {
@@ -778,18 +777,6 @@ function fecharHistorico() {
   document.getElementById("modalHistorico").style.display = "none";
   document.getElementById("buscaHistorico").value = "";
 }
-
-// Mantém o cabeçalho da tabela grudado logo abaixo da barra de ações,
-// recalculando se a barra mudar de altura (ex.: quebra de linha em telas menores).
-function ajustarOffsetCabecalho() {
-  const barra = document.querySelector(".barra-acoes");
-  if (!barra) return;
-  const altura = barra.getBoundingClientRect().height;
-  document.documentElement.style.setProperty("--offset-topo", `${altura}px`);
-}
-
-window.addEventListener("resize", ajustarOffsetCabecalho);
-ajustarOffsetCabecalho();
 
 carregarDados();
 </script>
