@@ -1,302 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>Controle de Entregas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Entregas</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-      background: url('https://static.vecteezy.com/ti/vetor-gratis/p1/29246153-fundo-de-sistema-geometrico-e-de-conexao-de-tecnologia-de-alta-tecnologia-com-resumo-de-dados-digitais-vetor.jpg') no-repeat center center fixed;
-      background-size: cover;
-    }
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 20px;
+    background: url('https://static.vecteezy.com/ti/vetor-gratis/p1/29246153-fundo-de-sistema-geometrico-e-de-conexao-de-tecnologia-de-alta-tecnologia-com-resumo-de-dados-digitais-vetor.jpg') no-repeat center center fixed;
+    background-size: cover;
+  }
 
-    .container {
-      background: rgba(255,255,255,0.95);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    }
+  .container {
+    background: rgba(255,255,255,0.96);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  }
 
-    .filtros button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-right: 10px;
-    }
+  h2 { margin: 0 0 4px; }
+  .subtitulo { color: #666; font-size: 13px; margin: 0 0 16px; }
 
-    .btn-todos { background: #007bff; }
-    .btn-pendente { background: #dc3545; }
-    .btn-respondido { background: #28a745; }
+  .filtros button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 10px;
+  }
 
-    .ativo {
-      box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
-    }
+  .btn-todos { background: #007bff; }
+  .btn-pendente { background: #dc3545; }
+  .btn-respondido { background: #28a745; }
+  .ativo { box-shadow: 0 0 0 3px rgba(0,0,0,0.2); }
 
-    .cards {
-      display: flex;
-      gap: 15px;
-      margin: 15px 0;
-    }
+  .cards { display: flex; gap: 15px; margin: 15px 0; }
 
-    .card {
-      flex: 1;
-      padding: 15px;
-      border-radius: 10px;
-      background: white;
-      color: black;
-      text-align: center;
-      font-weight: bold;
-      border: 1px solid #ddd;
-      font-size: 18px;
-    }
+  .card {
+    flex: 1;
+    padding: 15px;
+    border-radius: 10px;
+    background: white;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    font-size: 18px;
+  }
 
-    .numero-total {
-      color: #007bff;
-      font-size: 26px;
-      font-weight: bold;
-    }
+  .numero-total { color: #007bff; font-size: 26px; font-weight: bold; }
+  .numero-pendente { color: #dc3545; font-size: 26px; font-weight: bold; }
+  .numero-respondido { color: #28a745; font-size: 26px; font-weight: bold; }
 
-    .numero-pendente {
-      color: #dc3545;
-      font-size: 26px;
-      font-weight: bold;
-    }
+  .acoes-grupo {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px; border-radius: 8px;
+    background: #fff5e6; border: 1px solid #ffd699;
+    flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .acoes-grupo strong { font-size: 13px; color: #a06000; }
 
-    .numero-respondido {
-      color: #28a745;
-      font-size: 26px;
-      font-weight: bold;
-    }
+  .acoes {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap; padding: 12px;
+    background: #f4f6f8; border-radius: 8px; margin-bottom: 15px;
+  }
 
-    .tabela-wrapper {
-      overflow-x: auto;
-      width: 100%;
-      margin-top: 15px;
-    }
+  .btn-lote, .btn-importar, .btn-exportar, .btn-modelo,
+  .btn-resp-lote, .btn-historico, .btn-salvar-tudo {
+    color: white; padding: 10px 14px; border: none;
+    border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;
+  }
+  .btn-lote { background: #ff9800; }
+  .btn-importar { background: #6c757d; }
+  .btn-exportar { background: #17a2b8; }
+  .btn-modelo { background: #6f42c1; }
+  .btn-resp-lote { background: #20c997; }
+  .btn-historico { background: #343a40; }
+  .btn-salvar-tudo { background: #28a745; }
+  button:disabled { opacity: .6; cursor: default; }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-    }
+  .tabela-wrapper {
+    overflow-x: auto; width: 100%;
+    border: 1px solid #ddd; border-radius: 8px;
+  }
 
-    th {
-      background: #007bff;
-      color: white;
-      padding: 8px;
-      white-space: nowrap;
-    }
+  table { border-collapse: collapse; width: 100%; background: white; }
 
-    td {
-      padding: 6px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-      vertical-align: middle;
-    }
+  th {
+    background: #007bff; color: white; padding: 9px 8px;
+    white-space: nowrap; font-size: 13px; position: sticky; top: 0;
+  }
 
-    /* Coluna Motivo: quebra linha e largura mínima garantida */
-    td.col-motivo {
-      text-align: left;
-      white-space: normal;
-      word-break: break-word;
-      min-width: 180px;
-      max-width: 300px;
-      line-height: 1.4;
-    }
+  td {
+    padding: 7px 8px; border-bottom: 1px solid #eee;
+    text-align: center; vertical-align: middle; font-size: 13px;
+  }
 
-    td.col-motivo input {
-      width: 100%;
-      white-space: normal;
-      word-break: break-word;
-      box-sizing: border-box;
-    }
+  td.col-cliente {
+    text-align: left; min-width: 170px; max-width: 240px;
+    word-break: break-word; line-height: 1.35;
+  }
 
-    tr:nth-child(even) {
-      background: #f9f9f9;
-    }
+  td.col-motivo {
+    text-align: left; min-width: 220px; max-width: 320px;
+    word-break: break-word; line-height: 1.4;
+  }
+  td.col-motivo input { width: 100%; box-sizing: border-box; padding: 5px; }
 
-    tr:hover {
-      background: #e9f3ff;
-    }
+  tr:nth-child(even) { background: #fafafa; }
+  tr:hover { background: #e9f3ff; }
 
-    .status-respondido {
-      background: #28a745;
-      color: white;
-      font-weight: bold;
-    }
+  .status-respondido { background: #28a745; color: white; font-weight: bold; }
+  .status-pendente { background: #dc3545; color: white; font-weight: bold; }
 
-    .status-pendente {
-      background: #dc3545;
-      color: white;
-      font-weight: bold;
-    }
+  tr.atraso-alto td:first-child { box-shadow: inset 4px 0 0 #dc3545; }
 
-    select, input[type="text"], input:not([type]) {
-      width: 100%;
-    }
+  .msg-icone { cursor: help; font-size: 14px; }
 
-    .acoes {
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+  .pendente-envio { background: #fff8e1 !important; }
 
-    .acoes-grupo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px;
-      border-radius: 8px;
-      background: #f4f6f8;
-      flex-wrap: wrap;
-    }
+  select, input[type="text"], input:not([type]) { width: 100%; }
 
-    .acoes-grupo strong {
-      font-size: 13px;
-      color: #555;
-      margin-right: 4px;
-    }
+  /* Barra de status de sincronização */
+  #barraSync {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #343a40; color: white;
+    padding: 10px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: bold;
+    box-shadow: 0 4px 14px rgba(0,0,0,.3);
+    display: none; z-index: 900;
+  }
 
-    .btn-lote {
-      background: #ff9800;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-importar {
-      background: #6c757d;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-exportar {
-      background: #17a2b8;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-modelo {
-      background: #6f42c1;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-resp-lote {
-      background: #20c997;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    tr.atraso-alto {
-      background: #ffe5e5 !important;
-    }
-
-    tr.atraso-alto:hover {
-      background: #ffcccc !important;
-    }
-
-    .btn-historico {
-      background: #343a40;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal-box {
-      background: white;
-      width: 90%;
-      max-width: 900px;
-      max-height: 85vh;
-      border-radius: 12px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .modal-header h3 {
-      margin: 0;
-    }
-
-    .modal-fechar {
-      background: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .modal-busca {
-      margin-bottom: 12px;
-    }
-
-    .modal-busca input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
-
-    .modal-tabela-wrapper {
-      overflow-y: auto;
-      flex: 1;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-
-    #tabelaHistorico th {
-      position: sticky;
-      top: 0;
-    }
-  </style>
+  /* Modal de histórico */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal-box {
+    background: white; width: 90%; max-width: 900px; max-height: 85vh;
+    border-radius: 12px; padding: 20px; display: flex; flex-direction: column;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .modal-header h3 { margin: 0; }
+  .modal-fechar { background: #dc3545; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
+  .modal-busca input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 12px; }
+  .modal-tabela-wrapper { overflow-y: auto; flex: 1; border: 1px solid #ddd; border-radius: 8px; }
+</style>
 </head>
 
 <body>
@@ -304,6 +157,7 @@
 <div class="container">
 
   <h2>🚚 Entregas Pendentes</h2>
+  <p class="subtitulo">Acompanhamento de atrasos por NF e resposta das transportadoras</p>
 
   <div class="filtros">
     <button class="btn-todos ativo" onclick="filtrar('TODOS', this)">Todos</button>
@@ -312,48 +166,26 @@
   </div>
 
   <div class="cards">
-    <div class="card total" id="totalCard">
-      Todos: <span class="numero-total">0</span>
-    </div>
-    <div class="card pendente" id="pendenteCard">
-      Pendentes: <span class="numero-pendente">0</span>
-    </div>
-    <div class="card respondido" id="respondidoCard">
-      Respondidos: <span class="numero-respondido">0</span>
-    </div>
+    <div class="card" id="totalCard">Todos: <span class="numero-total">0</span></div>
+    <div class="card" id="pendenteCard">Pendentes: <span class="numero-pendente">0</span></div>
+    <div class="card" id="respondidoCard">Respondidos: <span class="numero-respondido">0</span></div>
   </div>
 
-  <!-- Fluxo para a TRANSPORTADORA responder em lote -->
   <div class="acoes-grupo">
     <strong>📨 Resposta em lote (transportadora):</strong>
-    <button class="btn-modelo" onclick="exportarModeloTransportadora()">
-      📥 Baixar modelo (NFs pendentes)
-    </button>
+    <button class="btn-modelo" onclick="exportarModeloTransportadora()">📥 Baixar modelo (NFs pendentes)</button>
     <input type="file" id="csvRespostas" accept=".csv">
-    <button class="btn-resp-lote" onclick="importarRespostasTransportadora()">
-      📤 Importar respostas preenchidas
-    </button>
+    <button class="btn-resp-lote" onclick="importarRespostasTransportadora()">📤 Importar respostas preenchidas</button>
   </div>
 
-  <!-- Ações internas / administrativas -->
   <div class="acoes">
-    <button class="btn-lote" onclick="salvarSelecionados()">
-      💾 Salvar selecionados (manual)
-    </button>
-
+    <button class="btn-salvar-tudo" onclick="enviarFila(true)">💾 Salvar alterações (<span id="contadorFila">0</span>)</button>
+    <button class="btn-lote" onclick="salvarSelecionados()">✔️ Marcar selecionados</button>
     <input type="file" id="csvFile" accept=".csv">
-
-    <button class="btn-importar" onclick="importarCSV()">
-      📂 Importar planilha base (Admin)
-    </button>
-
-    <button class="btn-exportar" onclick="exportarExcel()">
-      📊 Exportar tudo (Excel/CSV)
-    </button>
-
-    <button class="btn-historico" onclick="abrirHistorico()">
-      📜 Ver Histórico
-    </button>
+    <button class="btn-importar" onclick="importarCSV()">📂 Importar planilha base (Admin)</button>
+    <button class="btn-exportar" onclick="exportarExcel()">📊 Exportar tudo</button>
+    <button class="btn-historico" onclick="abrirHistorico()">📜 Ver Histórico</button>
+    <button class="btn-importar" onclick="carregarDados()">🔄 Atualizar</button>
   </div>
 
   <div class="tabela-wrapper">
@@ -363,15 +195,11 @@
           <th><input type="checkbox" onclick="selecionarTodos(this)"></th>
           <th>Pedido</th>
           <th>NF</th>
-          <th>Transp</th>
+          <th>Cliente</th>
           <th>Cidade</th>
-          <th>Coleta</th>
-          <th>Previsão</th>
-          <th>UF</th>
-          <th>Atraso dias</th>
-          <th>Status</th>
-          <th>Agendado</th>
-          <th>Em rota</th>
+          <th>Prev Etg</th>
+          <th>Atraso</th>
+          <th>Em Rota</th>
           <th>Status Resp</th>
           <th>Motivo</th>
           <th>Data Resp</th>
@@ -384,7 +212,8 @@
 
 </div>
 
-<!-- Modal de Histórico -->
+<div id="barraSync"></div>
+
 <div id="modalHistorico" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <div class="modal-header">
@@ -397,12 +226,7 @@
     <div class="modal-tabela-wrapper">
       <table id="tabelaHistorico">
         <thead>
-          <tr>
-            <th>Data/Hora</th>
-            <th>Pedido</th>
-            <th>NF</th>
-            <th>Motivo</th>
-          </tr>
+          <tr><th>Data/Hora</th><th>Pedido</th><th>NF</th><th>Motivo</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -411,221 +235,306 @@
 </div>
 
 <script>
-
+// ═══════════════════════════════════════════════════════
+// CONFIGURAÇÃO
+// ═══════════════════════════════════════════════════════
 const API_URL = "https://script.google.com/macros/s/AKfycby8IR2a-hfZSDZPfedgpLQv2TE0Da9A_CU0n_OiA7K3hhqO75TeNNebfjFFvgNZIOFu/exec";
-let filtroAtual = "TODOS";
 
-// Faz fetch com um tempo limite: se o Apps Script não responder dentro
-// do prazo, a Promise é rejeitada em vez de ficar pendente para sempre
-// (isso é o que fazia o botão "Importando..." travar sem nenhum erro).
-async function fetchComTimeout(url, options = {}, timeoutMs = 30000) {
+// Índices das colunas dentro de cada linha vinda da planilha
+const COL = {
+  PEDIDO: 0, NF: 1, CLIENTE: 2, CIDADE: 3, LOJA: 4,
+  DATA_COLETA: 5, PREV_ETG: 6, ATRASO: 7, EM_ROTA: 8,
+  ENTREGUE_GFW: 9, DATA_ENTREGA_GFW: 10,
+  ENTREGUE_RTE: 11, DATA_ENTREGA_RTE: 12,
+  ULTIMA_MSG: 13,
+  MOTIVO: 14, DATA_RESP: 15
+};
+
+const TOTAL_COLUNAS_TABELA = 12;
+
+let filtroAtual = "TODOS";
+let dadosGlobais = [];      // dados brutos (inclui cabeçalho na posição 0)
+let filaPendente = new Map(); // nf -> motivo, aguardando envio ao servidor
+
+// ═══════════════════════════════════════════════════════
+// UTILITÁRIOS
+// ═══════════════════════════════════════════════════════
+async function fetchComTimeout(url, options = {}, timeoutMs = 45000) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, { ...options, signal: controller.signal });
   } finally {
-    clearTimeout(timeoutId);
+    clearTimeout(id);
   }
 }
 
 function mensagemDeErro(err) {
   if (err.name === "AbortError") {
-    return "tempo limite excedido — o Apps Script demorou demais para responder (planilha muito grande, ou o script pode estar aguardando reautorização depois de uma atualização de código).";
+    return "tempo limite excedido — o Apps Script demorou demais para responder.";
   }
   return err.message || String(err);
 }
 
-// Guarda os dados brutos para exportar com tudo
-let dadosGlobais = [];
+function txt(valor) {
+  return String(valor ?? "").trim();
+}
 
-function formatarData(data) {
-  if (!data || isNaN(new Date(data))) return data;
-  const d = new Date(data);
+// Remove o ✏️ que vem grudado nas datas do sistema de origem
+function limparCelula(valor) {
+  return String(valor ?? "").replace(/✏️/g, "").trim();
+}
+
+function formatarData(valor) {
+  const s = limparCelula(valor);
+  if (!s) return "";
+  // Já está em dd/mm/aaaa — devolve como veio
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s.slice(0, 10);
+  const d = new Date(s);
+  if (isNaN(d)) return s;
   return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;
+}
+
+function escaparHtml(valor) {
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function mostrarSync(texto, cor = "#343a40", ocultarApos = 0) {
+  const barra = document.getElementById("barraSync");
+  barra.textContent = texto;
+  barra.style.background = cor;
+  barra.style.display = "block";
+  if (ocultarApos) setTimeout(() => { barra.style.display = "none"; }, ocultarApos);
+}
+
+function esconderSync() {
+  document.getElementById("barraSync").style.display = "none";
+}
+
+// ═══════════════════════════════════════════════════════
+// CARREGAMENTO (rede) — separado da RENDERIZAÇÃO (local)
+// Filtrar não refaz requisição: só re-renderiza.
+// ═══════════════════════════════════════════════════════
+async function carregarDados() {
+  const tbody = document.querySelector("#tabela tbody");
+  tbody.innerHTML = `<tr><td colspan="${TOTAL_COLUNAS_TABELA}" style="padding:30px; color:#888;">⏳ Carregando dados...</td></tr>`;
+
+  try {
+    const res = await fetchComTimeout(API_URL, {}, 45000);
+    dadosGlobais = await res.json();
+  } catch (err) {
+    tbody.innerHTML = `
+      <tr><td colspan="${TOTAL_COLUNAS_TABELA}" style="padding:30px; color:#dc3545;">
+        ⚠️ Não foi possível carregar os dados (${escaparHtml(mensagemDeErro(err))}).<br>
+        <button onclick="carregarDados()" style="margin-top:10px; padding:8px 16px; cursor:pointer;">🔄 Tentar novamente</button>
+      </td></tr>`;
+    return;
+  }
+
+  renderizarTabela();
+}
+
+function linhaEstaRespondida(linha) {
+  return txt(linha[COL.MOTIVO]) !== "";
+}
+
+function renderizarTabela() {
+  const tbody = document.querySelector("#tabela tbody");
+  const linhas = dadosGlobais.slice(1);
+
+  const fragmento = document.createDocumentFragment();
+
+  linhas.forEach((linha, i) => {
+    const respondida = linhaEstaRespondida(linha);
+    const status = respondida ? "RESPONDIDO" : "PENDENTE";
+
+    if (filtroAtual === "PENDENTE" && respondida) return;
+    if (filtroAtual === "RESPONDIDO" && !respondida) return;
+
+    const nf = txt(linha[COL.NF]);
+    const tr = document.createElement("tr");
+    tr.dataset.nf = nf;
+    tr.dataset.idx = i + 1; // posição dentro de dadosGlobais
+
+    if ((parseInt(linha[COL.ATRASO]) || 0) > 5) tr.classList.add("atraso-alto");
+    if (filaPendente.has(nf)) tr.classList.add("pendente-envio");
+
+    const ultimaMsg = limparCelula(linha[COL.ULTIMA_MSG]);
+    const iconeMsg = ultimaMsg
+      ? `<span class="msg-icone" title="${escaparHtml(ultimaMsg)}">💬</span>`
+      : "";
+
+    tr.innerHTML = `
+      <td><input type="checkbox" class="checkLinha"></td>
+      <td>${escaparHtml(linha[COL.PEDIDO])}</td>
+      <td>${escaparHtml(nf)} ${iconeMsg}</td>
+      <td class="col-cliente">${escaparHtml(linha[COL.CLIENTE])}</td>
+      <td>${escaparHtml(linha[COL.CIDADE])}</td>
+      <td>${formatarData(linha[COL.PREV_ETG])}</td>
+      <td>${escaparHtml(linha[COL.ATRASO])}</td>
+      <td>${escaparHtml(limparCelula(linha[COL.EM_ROTA]))}</td>
+      <td class="${respondida ? 'status-respondido' : 'status-pendente'}">${status}</td>
+      <td class="col-motivo">
+        <input value="${escaparHtml(linha[COL.MOTIVO])}"
+               oninput="marcarAlteracao(this)"
+               onkeydown="if(event.key==='Enter') enviarFila(true)">
+      </td>
+      <td>${formatarData(linha[COL.DATA_RESP])}</td>
+      <td><button onclick="salvarLinha(this)">Salvar</button></td>
+    `;
+
+    fragmento.appendChild(tr);
+  });
+
+  tbody.innerHTML = "";
+  if (!fragmento.childNodes.length) {
+    tbody.innerHTML = `<tr><td colspan="${TOTAL_COLUNAS_TABELA}" style="padding:25px; color:#888;">Nenhum registro neste filtro.</td></tr>`;
+  } else {
+    tbody.appendChild(fragmento);
+  }
+
+  atualizarContadores();
+}
+
+function atualizarContadores() {
+  const linhas = dadosGlobais.slice(1);
+  const total = linhas.length;
+  const respondidos = linhas.filter(linhaEstaRespondida).length;
+
+  document.querySelector(".numero-total").textContent = total;
+  document.querySelector(".numero-respondido").textContent = respondidos;
+  document.querySelector(".numero-pendente").textContent = total - respondidos;
+  document.getElementById("contadorFila").textContent = filaPendente.size;
 }
 
 function filtrar(tipo, btn) {
   filtroAtual = tipo;
-  document.querySelectorAll(".filtros button")
-    .forEach(b => b.classList.remove("ativo"));
+  document.querySelectorAll(".filtros button").forEach(b => b.classList.remove("ativo"));
   btn.classList.add("ativo");
-  carregarDados();
+  renderizarTabela(); // instantâneo: não vai à rede
 }
 
 function selecionarTodos(master) {
-  document.querySelectorAll(".checkLinha")
-    .forEach(c => c.checked = master.checked);
+  document.querySelectorAll(".checkLinha").forEach(c => c.checked = master.checked);
 }
 
-async function carregarDados() {
-  const tbody = document.querySelector("#tabela tbody");
-  tbody.innerHTML = `
-    <tr>
-      <td colspan="16" style="text-align:center; padding: 30px; color: #888; font-size: 16px;">
-        ⏳ Carregando dados...
-      </td>
-    </tr>
-  `;
+// ═══════════════════════════════════════════════════════
+// EDIÇÃO OTIMISTA + FILA DE ENVIO
+// A tela reage na hora; o servidor é atualizado em bloco.
+// ═══════════════════════════════════════════════════════
+function marcarAlteracao(input) {
+  const tr = input.closest("tr");
+  const nf = tr.dataset.nf;
+  const idx = parseInt(tr.dataset.idx);
+  const motivo = input.value;
 
-  let dados;
-  try {
-    const res = await fetchComTimeout(API_URL, {}, 45000);
-    dados = await res.json();
-  } catch (err) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="16" style="text-align:center; padding: 30px; color: #dc3545; font-size: 15px;">
-          ⚠️ Não foi possível carregar os dados (${mensagemDeErro(err)}).<br>
-          <button onclick="carregarDados()" style="margin-top:10px; padding:8px 16px; cursor:pointer;">🔄 Tentar novamente</button>
-        </td>
-      </tr>
-    `;
-    return;
+  // Atualiza o dado local imediatamente
+  dadosGlobais[idx][COL.MOTIVO] = motivo;
+
+  if (txt(motivo)) {
+    filaPendente.set(nf, motivo);
+    tr.classList.add("pendente-envio");
+  } else {
+    filaPendente.delete(nf);
+    tr.classList.remove("pendente-envio");
   }
 
-  // Salva os dados brutos globalmente para o exportar
-  dadosGlobais = dados;
+  // Atualiza a célula de status sem redesenhar a tabela
+  const celulaStatus = tr.children[8];
+  const respondida = txt(motivo) !== "";
+  celulaStatus.textContent = respondida ? "RESPONDIDO" : "PENDENTE";
+  celulaStatus.className = respondida ? "status-respondido" : "status-pendente";
 
-  tbody.innerHTML = "";
-
-  let total = 0;
-  let pendentes = 0;
-  let respondidos = 0;
-
-  dados.slice(1).forEach(linha => {
-    // Coluna "Atraso?" (índice 11) foi descontinuada.
-    // Status agora depende só de o Motivo estar preenchido.
-    const motivoAtual = String(linha[12] ?? "");
-    const dataResposta = linha[13] || "";
-    const status = motivoAtual.trim() ? "RESPONDIDO" : "PENDENTE";
-
-    total++;
-    if (status === "RESPONDIDO") { respondidos++; } else { pendentes++; }
-
-    if (filtroAtual === "PENDENTE" && status !== "PENDENTE") return;
-    if (filtroAtual === "RESPONDIDO" && status !== "RESPONDIDO") return;
-
-    const tr = document.createElement("tr");
-    const diasAtraso = parseInt(linha[7]) || 0;
-    if (diasAtraso > 5) tr.classList.add("atraso-alto");
-
-    tr.innerHTML = `
-      <td><input type="checkbox" class="checkLinha"></td>
-      <td>${linha[0]}</td>
-      <td>${linha[1]}</td>
-      <td>${linha[2]}</td>
-      <td>${linha[3]}</td>
-      <td>${formatarData(linha[4])}</td>
-      <td>${formatarData(linha[5])}</td>
-      <td>${linha[6]}</td>
-      <td>${linha[7]}</td>
-      <td>${linha[8]}</td>
-      <td>${linha[9]}</td>
-      <td>${formatarData(linha[10])}</td>
-      <td class="${status === 'RESPONDIDO' ? 'status-respondido' : 'status-pendente'}">
-        ${status}
-      </td>
-      <td class="col-motivo"><input value="${motivoAtual}" /></td>
-      <td>${formatarData(dataResposta)}</td>
-      <td><button onclick="salvar(this)">Salvar</button></td>
-    `;
-
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById("totalCard").innerHTML =
-    `Todos: <span class="numero-total">${total}</span>`;
-  document.getElementById("pendenteCard").innerHTML =
-    `Pendentes: <span class="numero-pendente">${pendentes}</span>`;
-  document.getElementById("respondidoCard").innerHTML =
-    `Respondidos: <span class="numero-respondido">${respondidos}</span>`;
+  atualizarContadores();
 }
 
-async function salvar(btn) {
-  const tr = btn.parentElement.parentElement;
-  const tds = tr.querySelectorAll("td");
-  const nf = tds[2].innerText;
-  const motivo = tds[13].querySelector("input").value;
-
-  btn.textContent = "⏳ Salvando...";
-  btn.disabled = true;
-
-  try {
-    await fetchComTimeout(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ nf, motivo })
-    }, 30000);
-
-    btn.textContent = "✅ Salvo!";
-    btn.style.background = "#28a745";
-    btn.style.color = "white";
-
-    setTimeout(() => {
-      btn.textContent = "Salvar";
-      btn.style.background = "";
-      btn.style.color = "";
-      btn.disabled = false;
-      carregarDados();
-    }, 2000);
-  } catch (err) {
-    alert("❌ Erro ao salvar: " + mensagemDeErro(err));
-    btn.textContent = "Salvar";
-    btn.style.background = "";
-    btn.style.color = "";
-    btn.disabled = false;
-  }
+function salvarLinha(btn) {
+  const tr = btn.closest("tr");
+  const input = tr.querySelector(".col-motivo input");
+  marcarAlteracao(input);
+  enviarFila(true);
 }
 
-async function salvarSelecionados() {
-  const linhas = document.querySelectorAll("#tabela tbody tr");
-  const lote = [];
-
-  linhas.forEach(tr => {
+function salvarSelecionados() {
+  let marcados = 0;
+  document.querySelectorAll("#tabela tbody tr").forEach(tr => {
     const check = tr.querySelector(".checkLinha");
     if (check && check.checked) {
-      const tds = tr.querySelectorAll("td");
-      const nf = tds[2].innerText;
-      const motivo = tds[13].querySelector("input").value;
-      if (motivo && motivo.trim()) lote.push({ nf, motivo });
+      const input = tr.querySelector(".col-motivo input");
+      if (input && txt(input.value)) { marcarAlteracao(input); marcados++; }
     }
   });
 
-  if (lote.length === 0) {
-    alert("Selecione pelo menos uma linha com o Motivo preenchido!");
+  if (!marcados) {
+    alert("Selecione linhas que já tenham o Motivo preenchido.");
+    return;
+  }
+  enviarFila(true);
+}
+
+let enviando = false;
+
+async function enviarFila(mostrarAviso) {
+  if (enviando) return;
+  if (filaPendente.size === 0) {
+    if (mostrarAviso) alert("Nenhuma alteração pendente para salvar.");
     return;
   }
 
-  const btnLote = document.querySelector(".btn-lote");
-  btnLote.textContent = "⏳ Salvando...";
-  btnLote.disabled = true;
+  const lote = Array.from(filaPendente, ([nf, motivo]) => ({ nf, motivo }));
+  enviando = true;
+  mostrarSync(`⏳ Salvando ${lote.length} alteração(ões)...`, "#ff9800");
 
   try {
-    await fetchComTimeout(API_URL, {
+    const resposta = await fetchComTimeout(API_URL, {
       method: "POST",
       body: JSON.stringify({ lote })
-    }, 30000);
+    }, 60000);
 
-    btnLote.textContent = "✅ Lote Salvo!";
-    btnLote.style.background = "#28a745";
+    const texto = await resposta.text();
 
-    setTimeout(() => {
-      btnLote.textContent = "💾 Salvar selecionados (manual)";
-      btnLote.style.background = "#ff9800";
-      btnLote.disabled = false;
-      carregarDados();
-    }, 2000);
+    // Só limpa da fila o que foi efetivamente enviado
+    lote.forEach(item => {
+      if (filaPendente.get(item.nf) === item.motivo) filaPendente.delete(item.nf);
+    });
+
+    // Preenche a Data Resp localmente, sem recarregar a tabela
+    const hoje = new Date();
+    const dataHoje = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+
+    lote.forEach(item => {
+      const idx = dadosGlobais.findIndex((l, i) => i > 0 && txt(l[COL.NF]) === item.nf);
+      if (idx > 0) dadosGlobais[idx][COL.DATA_RESP] = dataHoje;
+
+      const tr = document.querySelector(`#tabela tbody tr[data-nf="${CSS.escape(item.nf)}"]`);
+      if (tr) {
+        tr.classList.remove("pendente-envio");
+        tr.children[10].textContent = dataHoje;
+      }
+    });
+
+    atualizarContadores();
+    mostrarSync(`✅ ${lote.length} alteração(ões) salva(s)`, "#28a745", 2500);
+
+    if (texto && texto.toLowerCase().includes("erro")) alert(texto);
   } catch (err) {
-    alert("❌ Erro ao salvar lote: " + mensagemDeErro(err));
-    btnLote.textContent = "💾 Salvar selecionados (manual)";
-    btnLote.style.background = "#ff9800";
-    btnLote.disabled = false;
+    mostrarSync("❌ Falha ao salvar — as alterações continuam na fila", "#dc3545", 5000);
+    alert("Erro ao salvar: " + mensagemDeErro(err) + "\n\nSuas alterações não foram perdidas — clique em 'Salvar alterações' para tentar de novo.");
+  } finally {
+    enviando = false;
   }
 }
 
-// ═══════════════════════════════════════
-// Utilitário: parse de CSV (usado tanto no
-// import admin quanto no import de respostas)
-// ═══════════════════════════════════════
+// Avisa se houver alterações não enviadas ao fechar a aba
+window.addEventListener("beforeunload", e => {
+  if (filaPendente.size > 0) { e.preventDefault(); e.returnValue = ""; }
+});
+
+// ═══════════════════════════════════════════════════════
+// CSV — leitura, modelo e importações
+// ═══════════════════════════════════════════════════════
 async function lerCSV(file) {
   const texto = await new Promise((res, rej) => {
     const r = new FileReader();
@@ -636,81 +545,58 @@ async function lerCSV(file) {
 
   const separador = texto.includes(";") ? ";" : ",";
 
-  return texto
-    .trim()
-    .split("\n")
-    .map(linha =>
-      linha.split(separador).map(cel => cel.trim().replace(/\r/g, "").replace(/^"|"$/g, ""))
-    );
+  return texto.trim().split("\n").map(linha =>
+    linha.split(separador).map(cel =>
+      cel.trim().replace(/\r/g, "").replace(/^"|"$/g, "").replace(/✏️/g, "").trim()
+    )
+  );
 }
 
-// ═══════════════════════════════════════
-// Modelo para a transportadora: exporta só
-// NF + Motivo (vazio) das NFs pendentes
-// ═══════════════════════════════════════
-function exportarModeloTransportadora() {
-  if (!dadosGlobais || dadosGlobais.length < 2) {
-    alert("Nenhum dado carregado para gerar o modelo!");
-    return;
-  }
-
-  const pendentes = dadosGlobais.slice(1).filter(linha => {
-    const motivoAtual = String(linha[12] ?? "");
-    return !motivoAtual.trim();
-  });
-
-  if (pendentes.length === 0) {
-    alert("Não há NFs pendentes no momento!");
-    return;
-  }
-
-  const cabecalho = ["NF", "Motivo"];
-  const linhas = pendentes.map(linha => [linha[1], ""]);
-
-  const todasLinhas = [cabecalho, ...linhas];
-  const csv = todasLinhas
-    .map(row => row.map(cel => {
+function gerarCsvEBaixar(todasLinhas, nomeArquivo) {
+  const csv = todasLinhas.map(row =>
+    row.map(cel => {
       const v = String(cel ?? "");
-      return v.includes(";") || v.includes('"') || v.includes("\n")
-        ? `"${v.replace(/"/g, '""')}"`
-        : v;
-    }).join(";"))
-    .join("\r\n");
+      return /[;",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    }).join(";")
+  ).join("\r\n");
 
-  const bom = "\uFEFF";
-  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-
-  const hoje = new Date();
-  const dataHoje = `${String(hoje.getDate()).padStart(2,'0')}-${String(hoje.getMonth()+1).padStart(2,'0')}-${hoje.getFullYear()}`;
-
   link.href = url;
-  link.download = `modelo_transportadora_${dataHoje}.csv`;
+  link.download = nomeArquivo;
   link.click();
   URL.revokeObjectURL(url);
 }
 
-// ═══════════════════════════════════════
-// Importa o arquivo que a transportadora
-// preencheu (NF + Motivo) e salva em lote
-// ═══════════════════════════════════════
+function dataDeHojeArquivo() {
+  const h = new Date();
+  return `${String(h.getDate()).padStart(2,'0')}-${String(h.getMonth()+1).padStart(2,'0')}-${h.getFullYear()}`;
+}
+
+function exportarModeloTransportadora() {
+  if (dadosGlobais.length < 2) { alert("Nenhum dado carregado!"); return; }
+
+  const pendentes = dadosGlobais.slice(1).filter(l => !linhaEstaRespondida(l));
+  if (!pendentes.length) { alert("Não há NFs pendentes no momento!"); return; }
+
+  const cabecalho = ["Pedido", "NF", "Cliente", "Cidade", "Prev Etg", "Atraso", "Última Mensagem", "Motivo"];
+  const linhas = pendentes.map(l => [
+    l[COL.PEDIDO], l[COL.NF], l[COL.CLIENTE], l[COL.CIDADE],
+    formatarData(l[COL.PREV_ETG]), l[COL.ATRASO],
+    limparCelula(l[COL.ULTIMA_MSG]), ""
+  ]);
+
+  gerarCsvEBaixar([cabecalho, ...linhas], `modelo_transportadora_${dataDeHojeArquivo()}.csv`);
+}
+
 async function importarRespostasTransportadora() {
   const fileInput = document.getElementById("csvRespostas");
-
-  if (!fileInput.files.length) {
-    alert("Selecione o arquivo preenchido pela transportadora primeiro!");
-    return;
-  }
+  if (!fileInput.files.length) { alert("Selecione o arquivo preenchido pela transportadora!"); return; }
 
   const linhas = await lerCSV(fileInput.files[0]);
+  if (linhas.length < 2) { alert("Arquivo vazio ou sem dados!"); return; }
 
-  if (linhas.length < 2) {
-    alert("Arquivo vazio ou sem dados!");
-    return;
-  }
-
-  // Detecta as colunas NF e Motivo pelo cabeçalho (não depende da ordem)
   const cabecalho = linhas[0].map(c => c.toLowerCase());
   const idxNf = cabecalho.findIndex(c => c.includes("nf"));
   const idxMotivo = cabecalho.findIndex(c => c.includes("motivo"));
@@ -721,16 +607,11 @@ async function importarRespostasTransportadora() {
   }
 
   const respostas = linhas.slice(1)
-    .map(linha => ({ nf: linha[idxNf], motivo: linha[idxMotivo] }))
-    .filter(r => r.nf && r.motivo && r.motivo.trim());
+    .map(l => ({ nf: txt(l[idxNf]), motivo: txt(l[idxMotivo]) }))
+    .filter(r => r.nf && r.motivo);
 
-  if (respostas.length === 0) {
-    alert("Nenhuma linha com Motivo preenchido foi encontrada no arquivo.");
-    return;
-  }
-
-  const confirmacao = confirm(`Importar ${respostas.length} resposta(s) da transportadora?`);
-  if (!confirmacao) return;
+  if (!respostas.length) { alert("Nenhuma linha com Motivo preenchido no arquivo."); return; }
+  if (!confirm(`Importar ${respostas.length} resposta(s) da transportadora?`)) return;
 
   const btn = document.querySelector(".btn-resp-lote");
   btn.textContent = "⏳ Importando...";
@@ -740,11 +621,10 @@ async function importarRespostasTransportadora() {
     const resposta = await fetchComTimeout(API_URL, {
       method: "POST",
       body: JSON.stringify({ responderLote: true, respostas })
-    }, 60000);
+    }, 90000);
 
-    const resultado = await resposta.text();
-    alert(resultado);
-    carregarDados();
+    alert(await resposta.text());
+    await carregarDados();
   } catch (err) {
     alert("❌ Erro ao importar respostas: " + mensagemDeErro(err));
   } finally {
@@ -756,185 +636,111 @@ async function importarRespostasTransportadora() {
 
 async function importarCSV() {
   const fileInput = document.getElementById("csvFile");
-
-  if (!fileInput.files.length) {
-    alert("Selecione um arquivo CSV primeiro!");
-    return;
-  }
+  if (!fileInput.files.length) { alert("Selecione um arquivo CSV primeiro!"); return; }
 
   const senha = prompt("🔒 Digite a senha para importar:");
   if (!senha) return;
 
   const linhas = await lerCSV(fileInput.files[0]);
+  if (linhas.length < 2) { alert("CSV vazio ou sem dados!"); return; }
 
-  if (linhas.length < 2) {
-    alert("CSV vazio ou sem dados!");
-    return;
-  }
+  if (!confirm(`Importar ${linhas.length - 1} linha(s)?\n\nATENÇÃO: isso substituirá todos os dados da aba!`)) return;
 
-  const confirmacao = confirm(
-    `Importar ${linhas.length - 1} linha(s) do arquivo "${fileInput.files[0].name}"?\n\nATENÇÃO: Isso substituirá todos os dados da aba!`
-  );
-  if (!confirmacao) return;
-
-  const btnImportar = document.querySelector(".btn-importar");
-  btnImportar.textContent = "⏳ Importando...";
-  btnImportar.disabled = true;
+  const btn = document.querySelector(".btn-importar");
+  btn.textContent = "⏳ Importando...";
+  btn.disabled = true;
 
   try {
     const resposta = await fetchComTimeout(API_URL, {
       method: "POST",
-      body: JSON.stringify({ importarCSV: true, senha: senha, linhas: linhas })
-    }, 60000);
+      body: JSON.stringify({ importarCSV: true, senha, linhas })
+    }, 90000);
 
     const resultado = await resposta.text();
     alert(resultado);
 
-    if (resultado.includes("sucesso")) carregarDados();
+    if (resultado.toLowerCase().includes("sucesso")) {
+      filaPendente.clear();
+      await carregarDados();
+    }
   } catch (err) {
     alert("❌ Erro ao importar: " + mensagemDeErro(err));
   } finally {
-    btnImportar.textContent = "📂 Importar planilha base (Admin)";
-    btnImportar.disabled = false;
+    btn.textContent = "📂 Importar planilha base (Admin)";
+    btn.disabled = false;
     fileInput.value = "";
   }
 }
 
 function exportarExcel() {
-  if (!dadosGlobais || dadosGlobais.length < 2) {
-    alert("Nenhum dado carregado para exportar!");
-    return;
-  }
+  if (dadosGlobais.length < 2) { alert("Nenhum dado carregado para exportar!"); return; }
 
-  // Cabeçalho igual ao da tabela (sem checkbox e sem coluna Ação)
   const cabecalho = [
-    "Pedido", "NF", "Transp", "Cidade", "Coleta", "Previsão",
-    "UF", "Atraso dias", "Status", "Agendado", "Em rota",
+    "Pedido", "NF", "Cliente", "Cidade", "Loja", "Data Coleta", "Prev Etg",
+    "Atraso (dias)", "Em Rota", "Entregue (GFW)", "Data Entrega (GFW)",
+    "Entregue (RTE)", "Data Entrega (RTE)", "Última Mensagem",
     "Status Resp", "Motivo", "Data Resp"
   ];
 
-  // Monta linhas: pega os dados brutos e calcula Status Resp igual à tela
-  const linhas = dadosGlobais.slice(1).map(linha => {
-    const motivoAtual = String(linha[12] ?? "");
-    const statusResp = motivoAtual.trim() ? "RESPONDIDO" : "PENDENTE";
+  const linhas = dadosGlobais.slice(1).map(l => [
+    l[COL.PEDIDO], l[COL.NF], l[COL.CLIENTE], l[COL.CIDADE], l[COL.LOJA],
+    formatarData(l[COL.DATA_COLETA]), formatarData(l[COL.PREV_ETG]),
+    l[COL.ATRASO], limparCelula(l[COL.EM_ROTA]),
+    limparCelula(l[COL.ENTREGUE_GFW]), formatarData(l[COL.DATA_ENTREGA_GFW]),
+    limparCelula(l[COL.ENTREGUE_RTE]), formatarData(l[COL.DATA_ENTREGA_RTE]),
+    limparCelula(l[COL.ULTIMA_MSG]),
+    linhaEstaRespondida(l) ? "RESPONDIDO" : "PENDENTE",
+    txt(l[COL.MOTIVO]), formatarData(l[COL.DATA_RESP])
+  ]);
 
-    return [
-      linha[0],                    // Pedido
-      linha[1],                    // NF
-      linha[2],                    // Transp
-      linha[3],                    // Cidade
-      formatarData(linha[4]),      // Coleta
-      formatarData(linha[5]),      // Previsão
-      linha[6],                    // UF
-      linha[7],                    // Atraso dias
-      linha[8],                    // Status
-      linha[9],                    // Agendado
-      formatarData(linha[10]),     // Em rota
-      statusResp,                  // Status Resp
-      motivoAtual,                 // Motivo
-      formatarData(linha[13])      // Data Resp
-    ];
-  });
-
-  // Gera CSV com BOM UTF-8 para o Excel abrir com acentos corretos
-  const todasLinhas = [cabecalho, ...linhas];
-  const csv = todasLinhas
-    .map(row =>
-      row.map(cel => {
-        const v = String(cel ?? "");
-        // Envolve em aspas se tiver vírgula, aspas ou quebra de linha
-        return v.includes(",") || v.includes('"') || v.includes("\n")
-          ? `"${v.replace(/"/g, '""')}"`
-          : v;
-      }).join(";")
-    )
-    .join("\r\n");
-
-  const bom = "\uFEFF";
-  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
-  const url  = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  const hoje = new Date();
-  const dataHoje = `${String(hoje.getDate()).padStart(2,'0')}-${String(hoje.getMonth()+1).padStart(2,'0')}-${hoje.getFullYear()}`;
-
-  link.href = url;
-  link.download = `entregas_${dataHoje}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
+  gerarCsvEBaixar([cabecalho, ...linhas], `entregas_${dataDeHojeArquivo()}.csv`);
 }
 
-// ═══════════════════════════════════════
-// Modal de Histórico
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// HISTÓRICO
+// ═══════════════════════════════════════════════════════
 let historicoGlobal = [];
-
-function formatarDataHora(valor) {
-  // Data/Hora já vem formatada como texto do Apps Script (dd/MM/yyyy HH:mm:ss)
-  return valor || "";
-}
 
 async function abrirHistorico() {
   const modal = document.getElementById("modalHistorico");
   const tbody = document.querySelector("#tabelaHistorico tbody");
-
   modal.style.display = "flex";
-  tbody.innerHTML = `
-    <tr><td colspan="4" style="text-align:center; padding:20px; color:#888;">⏳ Carregando histórico...</td></tr>
-  `;
+  tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:#888;">⏳ Carregando histórico...</td></tr>`;
 
   try {
     const res = await fetchComTimeout(`${API_URL}?historico=true`, {}, 45000);
     const dados = await res.json();
-
-    // Ignora o cabeçalho e ordena do mais recente para o mais antigo
     historicoGlobal = dados.slice(1).reverse();
-
     renderizarHistorico(historicoGlobal);
   } catch (err) {
-    tbody.innerHTML = `
-      <tr><td colspan="4" style="text-align:center; padding:20px; color:#dc3545;">
-        ⚠️ Erro ao carregar histórico (${mensagemDeErro(err)}).<br>
-        <button onclick="abrirHistorico()" style="margin-top:10px; padding:6px 14px; cursor:pointer;">🔄 Tentar novamente</button>
-      </td></tr>
-    `;
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:#dc3545;">
+      ⚠️ Erro ao carregar histórico (${escaparHtml(mensagemDeErro(err))}).<br>
+      <button onclick="abrirHistorico()" style="margin-top:10px; padding:6px 14px; cursor:pointer;">🔄 Tentar novamente</button>
+    </td></tr>`;
   }
 }
 
 function renderizarHistorico(linhas) {
   const tbody = document.querySelector("#tabelaHistorico tbody");
-
-  if (linhas.length === 0) {
-    tbody.innerHTML = `
-      <tr><td colspan="4" style="text-align:center; padding:20px; color:#888;">Nenhum registro encontrado.</td></tr>
-    `;
+  if (!linhas.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:#888;">Nenhum registro encontrado.</td></tr>`;
     return;
   }
-
-  tbody.innerHTML = linhas.map(linha => `
+  tbody.innerHTML = linhas.map(l => `
     <tr>
-      <td>${formatarDataHora(linha[0])}</td>
-      <td>${linha[1]}</td>
-      <td>${linha[2]}</td>
-      <td style="text-align:left;">${linha[3]}</td>
-    </tr>
-  `).join("");
+      <td>${escaparHtml(l[0])}</td>
+      <td>${escaparHtml(l[1])}</td>
+      <td>${escaparHtml(l[2])}</td>
+      <td style="text-align:left;">${escaparHtml(l[3])}</td>
+    </tr>`).join("");
 }
 
 function filtrarHistorico() {
   const termo = document.getElementById("buscaHistorico").value.trim().toLowerCase();
-
-  if (!termo) {
-    renderizarHistorico(historicoGlobal);
-    return;
-  }
-
-  const filtrado = historicoGlobal.filter(linha =>
-    String(linha[1]).toLowerCase().includes(termo) ||
-    String(linha[2]).toLowerCase().includes(termo)
-  );
-
-  renderizarHistorico(filtrado);
+  if (!termo) { renderizarHistorico(historicoGlobal); return; }
+  renderizarHistorico(historicoGlobal.filter(l =>
+    String(l[1]).toLowerCase().includes(termo) || String(l[2]).toLowerCase().includes(termo)
+  ));
 }
 
 function fecharHistorico() {
@@ -943,7 +749,6 @@ function fecharHistorico() {
 }
 
 carregarDados();
-
 </script>
 
 </body>
