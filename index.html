@@ -297,8 +297,9 @@ const COL = {
   DATA_COLETA: 5, PREV_ETG: 6, ATRASO: 7, EM_ROTA: 8,
   ENTREGUE_GFW: 9, DATA_ENTREGA_GFW: 10,
   ENTREGUE_RTE: 11, DATA_ENTREGA_RTE: 12,
-  ULTIMA_MSG: 13,
-  MOTIVO: 14, DATA_RESP: 15
+  ULTIMA_MSG: 13,          // vem do sistema de origem (não é a resposta da transportadora)
+  MOTIVO: 14, DATA_RESP: 15,
+  ULTIMA_TRANSP: 16        // última resposta que a transportadora deu em ciclos anteriores
 };
 
 const TOTAL_COLUNAS_TABELA = 13;
@@ -417,7 +418,7 @@ function renderizarTabela() {
     if ((parseInt(linha[COL.ATRASO]) || 0) > 5) tr.classList.add("atraso-alto");
     if (filaPendente.has(nf)) tr.classList.add("pendente-envio");
 
-    const ultimaMsg = limparCelula(linha[COL.ULTIMA_MSG]);
+    const ultimaTransp = limparCelula(linha[COL.ULTIMA_TRANSP]);
 
     tr.innerHTML = `
       <td><input type="checkbox" class="checkLinha"></td>
@@ -428,7 +429,7 @@ function renderizarTabela() {
       <td>${formatarData(linha[COL.PREV_ETG])}</td>
       <td>${escaparHtml(linha[COL.ATRASO])}</td>
       <td>${escaparHtml(limparCelula(linha[COL.EM_ROTA]))}</td>
-      <td class="col-ultima-msg ${ultimaMsg ? 'tem-msg' : ''}">${escaparHtml(ultimaMsg)}</td>
+      <td class="col-ultima-msg ${ultimaTransp ? 'tem-msg' : ''}">${escaparHtml(ultimaTransp)}</td>
       <td class="${respondida ? 'status-respondido' : 'status-pendente'}">${status}</td>
       <td class="col-motivo">
         <input value="${escaparHtml(linha[COL.MOTIVO])}"
@@ -634,11 +635,11 @@ function exportarModeloTransportadora() {
   const pendentes = dadosGlobais.slice(1).filter(l => !linhaEstaRespondida(l));
   if (!pendentes.length) { alert("Não há NFs pendentes no momento!"); return; }
 
-  const cabecalho = ["Pedido", "NF", "Cliente", "Cidade", "Prev Etg", "Atraso", "Última Mensagem", "Motivo"];
+  const cabecalho = ["Pedido", "NF", "Cliente", "Cidade", "Prev Etg", "Atraso", "Sua última resposta", "Motivo"];
   const linhas = pendentes.map(l => [
     l[COL.PEDIDO], l[COL.NF], l[COL.CLIENTE], l[COL.CIDADE],
     formatarData(l[COL.PREV_ETG]), l[COL.ATRASO],
-    limparCelula(l[COL.ULTIMA_MSG]), ""
+    limparCelula(l[COL.ULTIMA_TRANSP]), ""
   ]);
 
   gerarCsvEBaixar([cabecalho, ...linhas], `modelo_transportadora_${dataDeHojeArquivo()}.csv`);
@@ -735,8 +736,8 @@ function exportarExcel() {
   const cabecalho = [
     "Pedido", "NF", "Cliente", "Cidade", "Loja", "Data Coleta", "Prev Etg",
     "Atraso (dias)", "Em Rota", "Entregue (GFW)", "Data Entrega (GFW)",
-    "Entregue (RTE)", "Data Entrega (RTE)", "Última Mensagem",
-    "Status Resp", "Motivo", "Data Resp"
+    "Entregue (RTE)", "Data Entrega (RTE)", "Última Mensagem (sistema)",
+    "Status Resp", "Motivo", "Data Resp", "Última Msg Transp"
   ];
 
   const linhas = dadosGlobais.slice(1).map(l => [
@@ -747,7 +748,8 @@ function exportarExcel() {
     limparCelula(l[COL.ENTREGUE_RTE]), formatarData(l[COL.DATA_ENTREGA_RTE]),
     limparCelula(l[COL.ULTIMA_MSG]),
     linhaEstaRespondida(l) ? "RESPONDIDO" : "PENDENTE",
-    txt(l[COL.MOTIVO]), formatarData(l[COL.DATA_RESP])
+    txt(l[COL.MOTIVO]), formatarData(l[COL.DATA_RESP]),
+    limparCelula(l[COL.ULTIMA_TRANSP])
   ]);
 
   gerarCsvEBaixar([cabecalho, ...linhas], `entregas_${dataDeHojeArquivo()}.csv`);
