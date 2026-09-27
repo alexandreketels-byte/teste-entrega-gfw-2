@@ -127,6 +127,30 @@
   }
   td.col-motivo input { width: 100%; box-sizing: border-box; padding: 5px; }
 
+  /* Última mensagem da transportadora: alerta visual */
+  td.col-ultima-msg {
+    text-align: left; min-width: 190px; max-width: 280px;
+    word-break: break-word; line-height: 1.35; font-size: 12px;
+  }
+
+  td.col-ultima-msg.tem-msg {
+    font-weight: bold;
+    border-radius: 4px;
+    animation: piscar-alerta 1.5s ease-in-out infinite;
+  }
+
+  @keyframes piscar-alerta {
+    0%, 100% { background: #ffe1e1; color: #b00020; }
+    50%      { background: #dc3545; color: #ffffff; }
+  }
+
+  /* Respeita quem prefere menos animação na tela */
+  @media (prefers-reduced-motion: reduce) {
+    td.col-ultima-msg.tem-msg {
+      animation: none; background: #ffe1e1; color: #b00020;
+    }
+  }
+
   tr:nth-child(even) { background: #fafafa; }
   tr:hover { background: #e9f3ff; }
 
@@ -135,7 +159,6 @@
 
   tr.atraso-alto td:first-child { box-shadow: inset 4px 0 0 #dc3545; }
 
-  .msg-icone { cursor: help; font-size: 14px; }
 
   .pendente-envio { background: #fff8e1 !important; }
 
@@ -227,6 +250,7 @@
           <th>Prev Etg</th>
           <th>Atraso</th>
           <th>Em Rota</th>
+          <th>Última Msg Transp</th>
           <th>Status Resp</th>
           <th>Motivo</th>
           <th>Data Resp</th>
@@ -277,7 +301,12 @@ const COL = {
   MOTIVO: 14, DATA_RESP: 15
 };
 
-const TOTAL_COLUNAS_TABELA = 12;
+const TOTAL_COLUNAS_TABELA = 13;
+
+// Posição das células que são atualizadas sem redesenhar a tabela
+// (contando a coluna do checkbox como 0)
+const CELULA_STATUS = 9;
+const CELULA_DATA_RESP = 11;
 
 let filtroAtual = "TODOS";
 let dadosGlobais = [];      // dados brutos (inclui cabeçalho na posição 0)
@@ -389,19 +418,17 @@ function renderizarTabela() {
     if (filaPendente.has(nf)) tr.classList.add("pendente-envio");
 
     const ultimaMsg = limparCelula(linha[COL.ULTIMA_MSG]);
-    const iconeMsg = ultimaMsg
-      ? `<span class="msg-icone" title="${escaparHtml(ultimaMsg)}">💬</span>`
-      : "";
 
     tr.innerHTML = `
       <td><input type="checkbox" class="checkLinha"></td>
       <td>${escaparHtml(linha[COL.PEDIDO])}</td>
-      <td>${escaparHtml(nf)} ${iconeMsg}</td>
+      <td>${escaparHtml(nf)}</td>
       <td class="col-cliente">${escaparHtml(linha[COL.CLIENTE])}</td>
       <td>${escaparHtml(linha[COL.CIDADE])}</td>
       <td>${formatarData(linha[COL.PREV_ETG])}</td>
       <td>${escaparHtml(linha[COL.ATRASO])}</td>
       <td>${escaparHtml(limparCelula(linha[COL.EM_ROTA]))}</td>
+      <td class="col-ultima-msg ${ultimaMsg ? 'tem-msg' : ''}">${escaparHtml(ultimaMsg)}</td>
       <td class="${respondida ? 'status-respondido' : 'status-pendente'}">${status}</td>
       <td class="col-motivo">
         <input value="${escaparHtml(linha[COL.MOTIVO])}"
@@ -469,7 +496,7 @@ function marcarAlteracao(input) {
   }
 
   // Atualiza a célula de status sem redesenhar a tabela
-  const celulaStatus = tr.children[8];
+  const celulaStatus = tr.children[CELULA_STATUS];
   const respondida = txt(motivo) !== "";
   celulaStatus.textContent = respondida ? "RESPONDIDO" : "PENDENTE";
   celulaStatus.className = respondida ? "status-respondido" : "status-pendente";
@@ -538,7 +565,7 @@ async function enviarFila(mostrarAviso) {
       const tr = document.querySelector(`#tabela tbody tr[data-nf="${CSS.escape(item.nf)}"]`);
       if (tr) {
         tr.classList.remove("pendente-envio");
-        tr.children[10].textContent = dataHoje;
+        tr.children[CELULA_DATA_RESP].textContent = dataHoje;
       }
     });
 
